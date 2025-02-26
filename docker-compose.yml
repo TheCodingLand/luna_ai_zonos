@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  zonos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zonos_container
+    runtime: nvidia
+   
+    volumes:
+      - ./volumes/models_cache:/root/.cache/huggingface
+      - ./volumes/voice_cache:/app/voice_cache
+    stdin_open: true
+    tty: true
+    command: ["python3", "api.py"]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "8887:8000"
