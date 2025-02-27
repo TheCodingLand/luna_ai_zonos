@@ -16,8 +16,8 @@ import traceback
 from zonos.model import Zonos
 from zonos.conditioning import make_cond_dict, supported_language_codes
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging with timestamp
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 multiprocessing.set_start_method("spawn", force=True)
 
@@ -34,8 +34,8 @@ warpup_request_file = "warmup_request.json"
 
 async def warmup():
     """
-    Warm up the API by generating audio with the first voice in the cache
-    it allows for faster first query response time.
+    Warm up the API by generating audio with the first voice in the cache.
+    It allows for faster first query response time.
     """
     import json
 
@@ -123,6 +123,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Zonos API", description="OpenAI-compatible TTS API for Zonos", lifespan=lifespan)
 
 
+# Middleware to log request timestamps
+@app.middleware("http")
+async def log_request_timestamp(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    end_time = time.time()
+    processing_time = end_time - start_time
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))
+    logging.info(f"{request.method} {request.url} processed in {processing_time:.2f}s at {timestamp}")
+    return response
+
+
 # Global Exception Handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -154,8 +166,13 @@ class VoiceResponse(BaseModel):
 
 @app.post("/v1/audio/speech")
 async def create_speech(request: SpeechRequest):
-    # Determine which model to use
+    # Validate language against supported languages
+    if request.language.lower() not in supported_language_codes:
+        error_msg = f"Unsupported language '{request.language}'. Supported languages: {supported_language_codes}"
+        logging.error(error_msg)
+        raise ValueError(error_msg)
 
+    # Determine which model to use
     model: Zonos | None = MODELS["transformer" if "transformer" in request.model else "hybrid"]
     if model is None:
         raise RuntimeError("Model not loaded")
@@ -183,10 +200,10 @@ async def create_speech(request: SpeechRequest):
     # Get voice embedding from cache if provided
     speaker_embedding = VOICE_CACHE.get(request.voice) if request.voice else None
 
-    # Default conditioning parameters
+    # Default conditioning parameters (using lower-case language)
     cond_dict = make_cond_dict(
         text=request.input,
-        language=request.language,
+        language=request.language.lower(),
         speaker=speaker_embedding,
         emotion=emotion_tensor,
         speaking_rate=speaking_rate,
