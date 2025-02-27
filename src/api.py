@@ -37,11 +37,11 @@ async def warmup():
 
     if len(VOICE_CACHE) == 0:
         return
+    logging.info("Warming up...")
     with open(warpup_request_file) as f:
         request = json.load(f)
         request = SpeechRequest(**request)
         request.voice = VOICE_CACHE.keys()[0]
-
     await create_speech(request)
 
 
