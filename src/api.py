@@ -50,14 +50,18 @@ def load_models():
     try:
         device = "cuda"
         logging.info("Loading models...")
-        logging.info("Loading transformer model...")
-        MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
-        MODELS["transformer"].requires_grad_(False).eval()
-        logging.info("Loaded transformer model")
-        logging.info("Loading hybrid model...")
-        MODELS["hybrid"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-hybrid", device=device)
-        MODELS["hybrid"].requires_grad_(False).eval()
-        logging.info("Loaded hybrid model")
+
+        if os.getenv("PREOLAD_HYBRID_MODEL") == "true":
+            logging.info("Loading hybrid model...")
+            MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-hybrid", device=device)
+            MODELS["hybrid"].requires_grad_(False).eval()
+            logging.info("Loaded hybrid model")
+        if os.getenv("PREOLAD_TRANSFORMER_MODEL") == "true":
+            logging.info("Loading transformer model...")
+            MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
+            MODELS["transformer"].requires_grad_(False).eval()
+            logging.info("Loaded transformer model")
+
     except Exception as e:
         logging.exception("Failed to load models")
         raise
@@ -147,6 +151,11 @@ class VoiceResponse(BaseModel):
 @app.post("/v1/audio/speech")
 async def create_speech(request: SpeechRequest):
     # Determine which model to use
+    if request.model not in MODELS:
+        return JSONResponse(
+            status_code=400, content={"detail": f"Invalid model name, or model not loaded. {request.model}"}
+        )
+
     model: Zonos = MODELS["transformer" if "transformer" in request.model else "hybrid"]
 
     # Convert speed to speaking_rate (15.0 is default)
