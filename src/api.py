@@ -33,6 +33,10 @@ warpup_request_file = "warmup_request.json"
 
 
 async def warmup():
+    """
+    Warm up the API by generating audio with the first voice in the cache
+    it allows for faster first query response time.
+    """
     import json
 
     if len(VOICE_CACHE) == 0:
@@ -151,10 +155,6 @@ class VoiceResponse(BaseModel):
 @app.post("/v1/audio/speech")
 async def create_speech(request: SpeechRequest):
     # Determine which model to use
-    if request.model not in MODELS:
-        return JSONResponse(
-            status_code=400, content={"detail": f"Invalid model name, or model not loaded. {request.model}"}
-        )
 
     model: Zonos = MODELS["transformer" if "transformer" in request.model else "hybrid"]
 
