@@ -26,7 +26,7 @@ VOICE_CACHE_DIR = "voice_cache"
 os.makedirs(VOICE_CACHE_DIR, exist_ok=True)
 
 # Global models and cache
-MODELS: Dict[str, Zonos] = {"transformer": None, "hybrid": None}  # type: ignore
+MODELS: Dict[str, Zonos | None] = {"transformer": None, "hybrid": None}  # type: ignore
 VOICE_CACHE: Dict[str, torch.Tensor] = {}
 
 warpup_request_file = "warmup_request.json"
@@ -156,7 +156,9 @@ class VoiceResponse(BaseModel):
 async def create_speech(request: SpeechRequest):
     # Determine which model to use
 
-    model: Zonos = MODELS["transformer" if "transformer" in request.model else "hybrid"]
+    model: Zonos | None = MODELS["transformer" if "transformer" in request.model else "hybrid"]
+    if model is None:
+        raise RuntimeError("Model not loaded")
 
     # Convert speed to speaking_rate (15.0 is default)
     speaking_rate = 15.0 * request.speed
