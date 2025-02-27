@@ -154,6 +154,8 @@ async def create_speech(request: SpeechRequest):
 
     # Prepare emotion tensor if provided
     emotion_tensor = None
+    if SpeechRequest.emotion is None:
+        request.emotion = {}
     if request.emotion:
         emotion_values = [
             request.emotion.get("happiness", 1.0),
