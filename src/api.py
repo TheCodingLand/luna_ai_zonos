@@ -41,7 +41,7 @@ async def warmup():
     with open(warpup_request_file) as f:
         request = json.load(f)
         request = SpeechRequest(**request)
-        request.voice = VOICE_CACHE.keys()[0]
+        request.voice = list(VOICE_CACHE.keys())[0]
     await create_speech(request)
 
 
