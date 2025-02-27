@@ -155,15 +155,9 @@ async def create_speech(request: SpeechRequest):
         torchaudio.save(buffer, wav_out, sr_out, format=request.response_format)
         buffer.seek(0)
 
-        # Determine the filename based on the response format
-        filename = f"speech.{request.response_format}"
-
         # Streaming response for real-time audio
-        return StreamingResponse(
-            buffer,
-            media_type=f"audio/{request.response_format}",
-            headers={"Content-Disposition": f"inline; filename={filename}"},
-        )
+
+        return StreamingResponse(buffer, media_type=f"audio/{request.response_format}")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
