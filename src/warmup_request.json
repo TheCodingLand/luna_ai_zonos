@@ -1,0 +1,18 @@
+{
+    "model": "Zyphra/Zonos-v0.1-transformer",
+    "input": "Im still trying to pick up the pieces of my restarted reality",
+    "voice": "luna_sama_voice_1740646070_0",
+    "speed": 1,
+    "emotion": {
+        "happiness": 1,
+        "sadness": 0.05,
+        "disgust": 0.05,
+        "fear": 0.05,
+        "surprise": 0.05,
+        "anger": 0.05,
+        "other": 0.1,
+        "neutral": 0.2
+    },
+    "response_format": "wav",
+    "language": "en-us"
+}

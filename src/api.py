@@ -29,6 +29,21 @@ os.makedirs(VOICE_CACHE_DIR, exist_ok=True)
 MODELS: Dict[str, Zonos] = {"transformer": None, "hybrid": None}  # type: ignore
 VOICE_CACHE: Dict[str, torch.Tensor] = {}
 
+warpup_request_file = "warmup_request.json"
+
+
+async def warmup():
+    import json
+
+    if len(VOICE_CACHE) == 0:
+        return
+    with open(warpup_request_file) as f:
+        request = json.load(f)
+        request = SpeechRequest(**request)
+        request.voice = VOICE_CACHE.keys()[0]
+
+    await create_speech(request)
+
 
 def load_models():
     """Load both models at startup and keep them in VRAM."""
@@ -83,6 +98,7 @@ async def lifespan(app: FastAPI):
     try:
         load_models()
         load_voice_cache()  # Load persisted voice cache
+        await warmup()
     except Exception as e:
         logging.exception("Error during startup lifespan")
         raise
