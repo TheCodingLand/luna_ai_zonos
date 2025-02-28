@@ -58,7 +58,7 @@ def load_models():
 
         if os.getenv("PRELOAD_HYBRID_MODEL") == "true":
             logging.info("Loading hybrid model...")
-            MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-hybrid", device=device)
+            MODELS["hybrid"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-hybrid", device=device)
             MODELS["hybrid"].requires_grad_(False).eval()
             logging.info("Loaded hybrid model")
         else:
