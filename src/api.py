@@ -46,6 +46,7 @@ async def warmup():
         request = json.load(f)
         request = SpeechRequest(**request)
         request.voice = list(VOICE_CACHE.keys())[0]
+        request.model = "hybrid" if os.getenv("PREOLAD_HYBRID_MODEL") == "true" else "transformer"
     await create_speech(request)
 
 
