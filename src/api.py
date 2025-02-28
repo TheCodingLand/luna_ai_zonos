@@ -46,7 +46,7 @@ async def warmup():
         request = json.load(f)
         request = SpeechRequest(**request)
         request.voice = list(VOICE_CACHE.keys())[0]
-        request.model = "hybrid" if os.getenv("PREOLAD_HYBRID_MODEL") == "true" else "transformer"
+        request.model = "hybrid" if os.getenv("PRELOAD_HYBRID_MODEL") == "true" else "transformer"
     await create_speech(request)
 
 
@@ -56,7 +56,7 @@ def load_models():
         device = "cuda"
         logging.info("Loading models...")
 
-        if os.getenv("PREOLAD_HYBRID_MODEL") == "true":
+        if os.getenv("PRELOAD_HYBRID_MODEL") == "true":
             logging.info("Loading hybrid model...")
             MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-hybrid", device=device)
             MODELS["hybrid"].requires_grad_(False).eval()
