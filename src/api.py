@@ -248,8 +248,12 @@ async def create_voice(file: UploadFile = File(...), name: str = None):
 
     # Load and process audio
     wav, sr = torchaudio.load(audio_data)
-
+    loaded_for_voice_creation=False
     # Generate embedding using transformer model
+    if "transformer" not in MODELS:
+        loaded_for_voice_creation=True
+        MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
+        MODELS["transformer"].requires_grad_(False).eval()
     speaker_embedding: Zonos = MODELS["transformer"].make_speaker_embedding(wav, sr)
 
     # Generate unique voice ID and cache embedding
@@ -260,7 +264,8 @@ async def create_voice(file: UploadFile = File(...), name: str = None):
     # Save the new embedding to disk immediately
     file_path = os.path.join(VOICE_CACHE_DIR, f"{voice_id}.pt")
     torch.save(speaker_embedding.cpu(), file_path)  # Save to CPU to avoid GPU memory issues
-
+    if loaded_for_voice_creation:
+        MODELS["transformer"] = None #clear the model
     return VoiceResponse(voice_id=voice_id, created=timestamp)
 
 
