@@ -250,7 +250,7 @@ async def create_voice(file: UploadFile = File(...), name: str = None):
     wav, sr = torchaudio.load(audio_data)
     loaded_for_voice_creation=False
     # Generate embedding using transformer model
-    if "transformer" not in MODELS:
+    if MODELS["transformer"] is None:
         loaded_for_voice_creation=True
         MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
         MODELS["transformer"].requires_grad_(False).eval()
