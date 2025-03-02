@@ -251,6 +251,7 @@ async def create_voice(file: UploadFile = File(...), name: str = None):
     loaded_for_voice_creation=False
     # Generate embedding using transformer model
     if MODELS["transformer"] is None:
+        device = "cuda"
         loaded_for_voice_creation=True
         MODELS["transformer"] = Zonos.from_pretrained("Zyphra/Zonos-v0.1-transformer", device=device)
         MODELS["transformer"].requires_grad_(False).eval()
